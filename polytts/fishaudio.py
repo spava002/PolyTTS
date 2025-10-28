@@ -70,8 +70,8 @@ class FishAudioTTS(TTSProvider):
         if references is None:
             references = []
 
-        speed = kwargs.get("speed", 1.0)
-        volume = kwargs.get("volume", 0.0)
+        speed = kwargs.pop("speed", 1.0)
+        volume = kwargs.pop("volume", 0.0)
         prosody = Prosody(speed=speed, volume=volume)
 
         sample_rate = self.get_sample_rate()
@@ -124,8 +124,8 @@ class FishAudioTTS(TTSProvider):
         if references is None:
             references = []
 
-        speed = kwargs.get("speed", 1.0)
-        volume = kwargs.get("volume", 0.0)
+        speed = kwargs.pop("speed", 1.0)
+        volume = kwargs.pop("volume", 0.0)
         prosody = Prosody(speed=speed, volume=volume)
 
         sample_rate = self.get_sample_rate()
