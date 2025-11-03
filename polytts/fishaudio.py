@@ -10,19 +10,21 @@ class FishAudioTTS(TTSProvider):
     def __init__(self, api_key: str | None = None):
         """
         Initialize Fish Audio TTS provider.
-        
+
         Args:
-            api_key: Fish Audio API key. If None, will try to get from FISHAUDIO_API_KEY env var.
+            api_key: Fish Audio API key. If None, will try to get from
+            FISHAUDIO_API_KEY environment variable.
         """
         super().__init__(api_key)
-        
+
         try:
             from fish_audio_sdk import Session
         except ImportError:
             raise ImportError(
-                "FishAudio is not installed. Install with: pip install polytts[fishaudio]"
+                "FishAudio is not installed. Install with: "
+                "pip install polytts[fishaudio]"
             )
-        
+
         api_key = self.api_key or os.getenv("FISHAUDIO_API_KEY")
         if not api_key:
             raise ValueError(
@@ -36,7 +38,7 @@ class FishAudioTTS(TTSProvider):
         return self.SAMPLE_RATE
 
     def run(
-        self, 
+        self,
         text: str,
         reference_id: str | None = None,
         references: list | None = None,
@@ -45,22 +47,23 @@ class FishAudioTTS(TTSProvider):
     ) -> AudioData:
         """
         Generate speech from text using Fish Audio TTS.
-        
+
         Args:
             text: The text to convert to speech
-            reference_id: Reference voice ID for voice cloning (from Fish Audio dashboard)
+            reference_id: Reference voice ID for voice cloning
             references: List of ReferenceAudio objects for custom voice cloning
-            response_format: Output audio format. Options: wav, pcm, mp3 (default: "mp3")
+            response_format: Output audio format: wav, pcm, mp3
             **kwargs: Additional parameters
-                
-                Note: Do not pass a 'prosody' object. Use 'speed' and 'volume' parameters instead.
+
+                Note: Do not pass a 'prosody' object.
+                Use 'speed' and 'volume' parameters instead.
 
                 For complete API reference:
                 https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech
-            
+
         Returns:
             AudioData object containing the generated audio
-            
+
         Example:
             >>> tts = FishAudioTTS()
             >>> audio = tts.run("Hello world")
@@ -85,7 +88,7 @@ class FishAudioTTS(TTSProvider):
         ))
 
         data = b"".join(response)
-        return AudioData(data=data, sample_rate=sample_rate, encoded_format=response_format)
+        return AudioData(data, sample_rate, response_format)
 
     def stream(
         self,
@@ -96,23 +99,24 @@ class FishAudioTTS(TTSProvider):
         **kwargs: Any
     ) -> Generator[AudioData, None, None]:
         """
-        Stream speech generation from text using Fish Audio TTS.
-        
+        Stream speech generation from text using Fish Audio TTS
+
         Args:
             text: The text to convert to speech
-            reference_id: Reference voice ID for voice cloning (from Fish Audio dashboard)
+            reference_id: Reference voice ID for voice cloning
             references: List of ReferenceAudio objects for custom voice cloning
-            response_format: Output audio format. Options: wav, pcm, mp3 (default: "mp3")
+            response_format: Output audio format: wav, pcm, mp3
             **kwargs: Additional parameters
-                
-                Note: Do not pass a 'prosody' object. Use 'speed' and 'volume' parameters instead.
+
+                Note: Do not pass a 'prosody' object.
+                Use 'speed' and 'volume' parameters instead.
 
                 For complete API reference:
                 https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech
-            
+
         Yields:
             AudioData objects containing chunks of generated audio
-            
+
         Example:
             >>> tts = FishAudioTTS()
             >>> for chunk in tts.stream("Hello world"):
@@ -140,4 +144,4 @@ class FishAudioTTS(TTSProvider):
         ))
 
         for data in response:
-            yield AudioData(data=data, sample_rate=sample_rate, encoded_format=response_format)
+            yield AudioData(data, sample_rate, response_format)
