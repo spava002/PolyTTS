@@ -47,3 +47,6 @@ all = [
 
 [project.urls]
 Homepage = "https://github.com/spava002/PolyTTS.git"
+
+[tool.setuptools]
+packages = ["polytts"]
