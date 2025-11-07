@@ -2,7 +2,7 @@ import os
 from typing import Generator, Any
 
 from .base import TTSProvider
-from .types import AudioData
+from .types import AudioData, EncodedBytesFormat
 
 class FishAudioTTS(TTSProvider):
     SAMPLE_RATE = 44100
@@ -15,8 +15,6 @@ class FishAudioTTS(TTSProvider):
             api_key: Fish Audio API key. If None, will try to get from
             FISHAUDIO_API_KEY environment variable.
         """
-        super().__init__(api_key)
-
         try:
             from fish_audio_sdk import Session
         except ImportError:
@@ -25,7 +23,7 @@ class FishAudioTTS(TTSProvider):
                 "pip install polytts[fishaudio]"
             )
 
-        api_key = self.api_key or os.getenv("FISHAUDIO_API_KEY")
+        api_key = api_key or os.getenv("FISHAUDIO_API_KEY")
         if not api_key:
             raise ValueError(
                 "Fish Audio API key is required. Provide it via the api_key parameter "
@@ -34,7 +32,6 @@ class FishAudioTTS(TTSProvider):
         self.client = Session(apikey=api_key)
 
     def get_sample_rate(self) -> int:
-        """Get the sample rate for Fish Audio TTS (44100 Hz)."""
         return self.SAMPLE_RATE
 
     def run(
@@ -42,7 +39,7 @@ class FishAudioTTS(TTSProvider):
         text: str,
         reference_id: str | None = None,
         references: list | None = None,
-        response_format: str = "pcm",
+        response_format: EncodedBytesFormat = "pcm",
         **kwargs: Any
     ) -> AudioData:
         """
@@ -50,16 +47,19 @@ class FishAudioTTS(TTSProvider):
 
         Args:
             text: The text to convert to speech
+            
             reference_id: Reference voice ID for voice cloning
+            
             references: List of ReferenceAudio objects for custom voice cloning
-            response_format: Output audio format: wav, pcm, mp3
+            
+            response_format: Output audio format: pcm, mp3, wav
+            
             **kwargs: Additional parameters
+                speed: Speech speed multiplier. Default: 1.0
 
-                Note: Do not pass a 'prosody' object.
-                Use 'speed' and 'volume' parameters instead.
+                volume: Speech volume. Default: 0.0
 
-                For complete API reference:
-                https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech
+            For complete API reference: https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech
 
         Returns:
             AudioData object containing the generated audio
@@ -73,9 +73,10 @@ class FishAudioTTS(TTSProvider):
         if references is None:
             references = []
 
-        speed = kwargs.pop("speed", 1.0)
-        volume = kwargs.pop("volume", 0.0)
-        prosody = Prosody(speed=speed, volume=volume)
+        prosody = Prosody(
+            speed=kwargs.pop("speed", 1.0),
+            volume=kwargs.pop("volume", 0.0)
+        )
 
         sample_rate = self.get_sample_rate()
         response = self.client.tts(TTSRequest(
@@ -95,7 +96,7 @@ class FishAudioTTS(TTSProvider):
         text: str,
         reference_id: str | None = None,
         references: list | None = None,
-        response_format: str = "pcm",
+        response_format: EncodedBytesFormat = "pcm",
         **kwargs: Any
     ) -> Generator[AudioData, None, None]:
         """
@@ -103,16 +104,19 @@ class FishAudioTTS(TTSProvider):
 
         Args:
             text: The text to convert to speech
+            
             reference_id: Reference voice ID for voice cloning
+            
             references: List of ReferenceAudio objects for custom voice cloning
-            response_format: Output audio format: wav, pcm, mp3
+            
+            response_format: Output audio format: pcm, mp3, wav
+            
             **kwargs: Additional parameters
+                speed: Speech speed multiplier. Default: 1.0
 
-                Note: Do not pass a 'prosody' object.
-                Use 'speed' and 'volume' parameters instead.
+                volume: Speech volume. Default: 0.0
 
-                For complete API reference:
-                https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech
+            For complete API reference: https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech
 
         Yields:
             AudioData objects containing chunks of generated audio
@@ -120,17 +124,17 @@ class FishAudioTTS(TTSProvider):
         Example:
             >>> tts = FishAudioTTS()
             >>> for chunk in tts.stream("Hello world"):
-            ...     # Process each chunk in real-time
-            ...     play_audio(chunk)
+            ...     print(chunk)
         """
         from fish_audio_sdk import TTSRequest, Prosody
 
         if references is None:
             references = []
 
-        speed = kwargs.pop("speed", 1.0)
-        volume = kwargs.pop("volume", 0.0)
-        prosody = Prosody(speed=speed, volume=volume)
+        prosody = Prosody(
+            speed=kwargs.pop("speed", 1.0),
+            volume=kwargs.pop("volume", 0.0)
+        )
 
         sample_rate = self.get_sample_rate()
         response = self.client.tts(TTSRequest(

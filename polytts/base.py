@@ -12,15 +12,6 @@ class TTSProvider(ABC):
     the required abstract methods.
     """
 
-    def __init__(self, api_key: str | None = None):
-        """
-        Initialize the TTS provider.
-
-        Args:
-            api_key: API key for cloud-based providers. None for local models.
-        """
-        self.api_key = api_key
-
     @abstractmethod
     def run(self, text: str, **kwargs: Any) -> AudioData:
         """
@@ -46,9 +37,6 @@ class TTSProvider(ABC):
 
         Yields:
             AudioData objects containing chunks of generated audio
-
-        Raises:
-            NotImplementedError: If the provider doesn't support streaming
         """
         pass
 

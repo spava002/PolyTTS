@@ -10,12 +10,10 @@ class GPTSovitsTTS(TTSProvider):
         Initialize GPT-SoVITS TTS provider.
 
         Args:
-            model_version: Model version to use (e.g., "v2ProPlus")
-            warmup_model: Whether to warmup the model, will make inference faster on
-            consecutive calls (default: True)
+            model_version: Model version to use. Options:
+                "v2ProPlus", "v2Pro", "v2", "v1", "v3", "v4"
+            warmup_model: Whether to warmup the model. Faster inference on consecutive calls
         """
-        super().__init__(api_key=None)
-
         try:
             from GPT_SoVITS.TTS_infer_pack.TTS import TTS, TTS_Config
         except ImportError:
@@ -32,13 +30,12 @@ class GPTSovitsTTS(TTSProvider):
             self.client.run("Warming up GPT-SoVITS model...")
 
     def get_sample_rate(self) -> int:
-        """Get the sample rate for the current model."""
         return self.client.configs.sampling_rate
 
     def run(
         self,
         text: str,
-        text_lang: str = "en",
+        text_lang: str,
         ref_audio_path: str | None = None,
         **kwargs: Any,
     ) -> AudioData:
@@ -47,21 +44,27 @@ class GPTSovitsTTS(TTSProvider):
 
         Args:
             text: The text to convert to speech
+            
             text_lang: Language of the text. Options: "en", "zh", "ja", "ko", etc.
-                (default: "en")
+            
             ref_audio_path: Path to reference audio file for voice cloning.
                 Should be 3-10 seconds of clear speech. If None, uses default reference.
+            
             **kwargs: Additional parameters
+                prompt_text: Transcript of reference audio for better cloning. Default: "".
+                
+                prompt_lang: Language of prompt text. Options: "en", "zh", "ja", "ko", etc. Default: "".
+                
+                aux_ref_audio_paths: Additional reference audios for tone fusion. Default: [].
 
-                For complete parameter reference:
-                https://github.com/spava002/GPT-SoVITS-Streaming/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L1015
-
-                Or the official documentation:
-
-                https://github.com/RVC-Boss/GPT-SoVITS/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L984
+                speed_factor: Speech speed multiplier. Default: 1.0
+                
+                For complete API reference:
+                    If installed with polytts[gptsovits]: https://github.com/spava002/GPT-SoVITS-Streaming/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L1015
+                    If installed from official: https://github.com/RVC-Boss/GPT-SoVITS/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L984
 
         Returns:
-            AudioData object with generated audio (numpy float32 array)
+            AudioData object with generated audio
 
         Example:
             >>> tts = GPTSovitsTTS()
@@ -70,14 +73,14 @@ class GPTSovitsTTS(TTSProvider):
         if ref_audio_path is None:
             ref_audio_path = "polytts/audio/audio1.wav"
 
-        response = self.client.run(
-            {
-                "text": text,
-                "text_lang": text_lang,
-                "ref_audio_path": ref_audio_path,
-                **kwargs,
-            }
-        )
+        inputs = {
+            "text": text,
+            "text_lang": text_lang,
+            "ref_audio_path": ref_audio_path,
+            **kwargs,
+        }
+
+        response = self.client.run(inputs)
 
         sample_rate, data = next(response)
         return AudioData(
@@ -89,7 +92,7 @@ class GPTSovitsTTS(TTSProvider):
     def stream(
         self,
         text: str,
-        text_lang: str = "en",
+        text_lang: str,
         ref_audio_path: str | None = None,
         **kwargs: Any,
     ) -> Generator[AudioData, None, None]:
@@ -98,45 +101,49 @@ class GPTSovitsTTS(TTSProvider):
 
         Args:
             text: The text to convert to speech
+            
             text_lang: Language of the text. Options: "en", "zh", "ja", "ko", etc.
-                (default: "en")
+            
             ref_audio_path: Path to reference audio file for voice cloning.
                 Should be 3-10 seconds of clear speech. If None, uses default reference.
+            
             **kwargs: Additional parameters
+                prompt_text: Transcript of reference audio for better cloning. Default: "".
+                
+                prompt_lang: Language of prompt text. Options: "en", "zh", "ja", "ko", etc. Default: "".
+                
+                aux_ref_audio_paths: Additional reference audios for tone fusion. Default: [].
 
-                Note: Streaming automatically sets return_fragment=True and
-                parallel_infer=False
-
-                For complete parameter reference:
-                https://github.com/spava002/GPT-SoVITS-Streaming/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L1015
-
-                Or the official documentation:
-
-                https://github.com/RVC-Boss/GPT-SoVITS/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L984
+                speed_factor: Speech speed multiplier. Default: 1.0
+                
+                For complete API reference:
+                    If installed with polytts[gptsovits]: 
+                    https://github.com/spava002/GPT-SoVITS-Streaming/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L1015
+                    
+                    If installed from official: 
+                    https://github.com/RVC-Boss/GPT-SoVITS/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L984
 
         Yields:
             AudioData objects containing chunks of generated audio
-            (numpy float32 arrays)
 
         Example:
             >>> tts = GPTSovitsTTS()
             >>> for chunk in tts.stream("Hello world"):
-            ...     # Process each chunk in real-time
-            ...     play_audio(chunk)
+            ...     print(chunk)
         """
         if ref_audio_path is None:
             ref_audio_path = "polytts/audio/audio1.wav"
 
-        for sample_rate, data in self.client.run(
-            {
-                "text": text,
-                "text_lang": text_lang,
-                "ref_audio_path": ref_audio_path,
-                "return_fragment": True,
-                "parallel_infer": False,
-                **kwargs,
-            }
-        ):
+        inputs = {
+            "text": text,
+            "text_lang": text_lang,
+            "ref_audio_path": ref_audio_path,
+            "return_fragment": True,
+            "parallel_infer": False,
+            **kwargs,
+        }
+
+        for sample_rate, data in self.client.run(inputs):
             yield AudioData(
                 data=data,
                 sample_rate=sample_rate,

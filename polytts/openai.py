@@ -2,7 +2,7 @@ import os
 from typing import Generator, Any
 
 from .base import TTSProvider
-from .types import AudioData
+from .types import AudioData, EncodedBytesFormat
 
 class OpenAITTS(TTSProvider):
     SAMPLE_RATE = 24000
@@ -15,8 +15,6 @@ class OpenAITTS(TTSProvider):
             api_key: OpenAI API key. If None, will try to get from
             OPENAI_API_KEY environment variable.
         """
-        super().__init__(api_key)
-
         try:
             from openai import OpenAI
         except ImportError:
@@ -25,7 +23,7 @@ class OpenAITTS(TTSProvider):
                 "pip install polytts[openai]"
             )
 
-        api_key = self.api_key or os.getenv("OPENAI_API_KEY")
+        api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise ValueError(
                 "OpenAI API key is required. Provide it via the api_key parameter "
@@ -34,7 +32,6 @@ class OpenAITTS(TTSProvider):
         self.client = OpenAI(api_key=api_key)
 
     def get_sample_rate(self) -> int:
-        """Get the sample rate for OpenAI TTS (24000 Hz)."""
         return self.SAMPLE_RATE
 
     def run(
@@ -42,7 +39,7 @@ class OpenAITTS(TTSProvider):
         text: str,
         voice: str = "alloy",
         model: str = "tts-1",
-        response_format: str = "pcm",
+        response_format: EncodedBytesFormat = "pcm",
         **kwargs: Any
     ) -> AudioData:
         """
@@ -50,14 +47,20 @@ class OpenAITTS(TTSProvider):
 
         Args:
             text: The text to convert to speech (max 4096 characters)
-            voice: Voice to use. Options: alloy, ash, ballad, coral, echo, fable,
-                onyx, nova, sage, shimmer, verse, marin, cedar
+            
+            voice: Voice to use. Options: 
+                alloy, ash, ballad, coral, echo, fable, onyx, nova, sage, shimmer, verse, marin, cedar
+            
             model: Model to use. Options: tts-1, tts-1-hd, gpt-4o-mini-tts
-            response_format: Output audio format: mp3, opus, aac, flac, wav, pcm
-            **kwargs: Additional parameters
+            
+            response_format: Output audio format: pcm, mp3, wav
+            
+            **kwargs: Additional parameters. Common parameters:
+                speed: Speech speed, 0.25-4.0 (default: 1.0).
+                
+                instructions: Guide the model's speaking style. Available only for gpt-4o-mini-tts.
 
-                For complete API reference:
-                https://platform.openai.com/docs/api-reference/audio/createSpeech
+            For complete API reference: https://platform.openai.com/docs/api-reference/audio/createSpeech
 
         Returns:
             AudioData object containing the generated audio
@@ -83,7 +86,7 @@ class OpenAITTS(TTSProvider):
         text: str,
         voice: str = "alloy",
         model: str = "tts-1",
-        response_format: str = "pcm",
+        response_format: EncodedBytesFormat = "pcm",
         **kwargs: Any
     ) -> Generator[AudioData, None, None]:
         """
@@ -91,14 +94,20 @@ class OpenAITTS(TTSProvider):
 
         Args:
             text: The text to convert to speech (max 4096 characters)
-            voice: Voice to use. Options: alloy, ash, ballad, coral, echo, fable,
-                onyx, nova, sage, shimmer, verse, marin, cedar
+            
+            voice: Voice to use. Options: 
+                alloy, ash, ballad, coral, echo, fable, onyx, nova, sage, shimmer, verse, marin, cedar
+            
             model: Model to use. Options: tts-1, tts-1-hd, gpt-4o-mini-tts
-            response_format: Output audio format: mp3, opus, aac, flac, wav, pcm
-            **kwargs: Additional parameters
+            
+            response_format: Output audio format: pcm, mp3, wav
+            
+            **kwargs: Additional parameters. Common parameters:
+                speed: Speech speed, 0.25-4.0 (default: 1.0).
+                
+                instructions: Guide the model's speaking style. Available only for gpt-4o-mini-tts.
 
-                For complete API reference:
-                https://platform.openai.com/docs/api-reference/audio/createSpeech
+            For complete API reference: https://platform.openai.com/docs/api-reference/audio/createSpeech
 
         Yields:
             AudioData objects containing chunks of generated audio
@@ -106,8 +115,7 @@ class OpenAITTS(TTSProvider):
         Example:
             >>> tts = OpenAITTS()
             >>> for chunk in tts.stream("Hello world"):
-            ...     # Process each chunk in real-time
-            ...     play_audio(chunk)
+            ...     print(chunk)
         """
         sample_rate = self.get_sample_rate()
         buffer = b""
