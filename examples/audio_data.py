@@ -1,7 +1,7 @@
-from polytts import ElevenLabsTTS
+from polytts import OpenAITTS
 
 # Initialize the provider
-tts = ElevenLabsTTS(api_key="your-api-key")
+tts = OpenAITTS()
 
 audio = tts.run("Hello, world!")
 
@@ -18,7 +18,9 @@ print(audio.duration)
 # You can also freely convert the audio data to different formats
 pcm_bytes = audio.as_bytes("pcm")
 wav_bytes = audio.as_bytes("wav")
-mp3_bytes = audio.as_bytes("mp3")
+
+# Note: mp3 may require additional dependencies such as pydub and ffmpeg
+# mp3_bytes = audio.as_bytes("mp3")
 
 numpy_audio_int16 = audio.as_numpy("int16")
 numpy_audio_float32 = audio.as_numpy("float32")
