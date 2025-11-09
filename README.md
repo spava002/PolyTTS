@@ -19,11 +19,20 @@ All providers return the same `AudioData` object with consistent conversion meth
 pip install polytts
 
 # With specific providers
+pip install polytts[openai]
 pip install polytts[elevenlabs]
+pip install polytts[fishaudio]
 pip install polytts[kokoro]
+pip install polytts[gptsovits]
 
 # With all providers
 pip install polytts[all]
+
+# Note: If using UV, URL dependencies (like GPT-SoVITS) must be installed separately:
+uv pip install git+https://github.com/spava002/GPT-SoVITS-Streaming.git
+
+# Install in editable mode with dev dependencies
+pip install -e ".[dev]"
 ```
 
 ## Quick Example
