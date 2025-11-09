@@ -23,9 +23,18 @@ classifiers = [
 
 dependencies = [
     "numpy<2.0",
+    "python-dotenv"
 ]
 
 [project.optional-dependencies]
+
+# Development/Testing
+dev = [
+    "pytest",
+    "filetype",
+    "mutagen",
+    "pydub"
+]
 
 # Cloud TTS providers
 openai = ["openai"]
@@ -49,4 +58,10 @@ all = [
 Homepage = "https://github.com/spava002/PolyTTS.git"
 
 [tool.setuptools]
-packages = ["polytts"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["polytts*"]
+
+[tool.setuptools.package-data]
+polytts = ["audio/**/*"]
