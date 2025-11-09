@@ -1,14 +1,10 @@
 import numpy as np
 from functools import cached_property
-from dataclasses import dataclass, field
-from typing import Literal, get_args
+from dataclasses import dataclass
 
 from .codecs import AudioConverter
-
-EncodedBytesFormat = Literal["pcm", "mp3", "wav"]
-EncodedNumpyFormat = Literal["raw"]
-
-DType = Literal["int16", "int32", "float16", "float32"]
+from .constants import EncodedBytesFormat, AudioFormat, DType
+from .validation import AudioValidator
 
 @dataclass
 class AudioData:
@@ -28,11 +24,15 @@ class AudioData:
     """
     data: bytes | np.ndarray
     sample_rate: int
-    encoded_format: EncodedBytesFormat | EncodedNumpyFormat
+    encoded_format: AudioFormat
 
     def __post_init__(self):
         """Validate inputs after dataclass initialization."""
-        self._validate_inputs()
+        AudioValidator.validate_audio_data_inputs(
+            self.data,
+            self.sample_rate,
+            self.encoded_format
+        )
 
     def __repr__(self) -> str:
         """Custom repr that properly shows computed properties."""
@@ -91,46 +91,6 @@ class AudioData:
                 rate = wav_file.getframerate()
                 return frames / float(rate)
 
-    def _validate_inputs(self):
-        """Validate all input parameters."""
-        self._validate_data()
-        self._validate_sample_rate()
-        self._validate_encoded_format()
-
-    def _validate_data(self):
-        """Validate that data is bytes or numpy array and not empty."""
-        if not isinstance(self.data, (bytes, np.ndarray)):
-            raise TypeError(
-                f"Data must be bytes or numpy array, got {type(self.data).__name__}"
-            )
-        
-        if len(self.data) == 0:
-            raise ValueError("Data must not be empty")
-
-    def _validate_sample_rate(self):
-        """Validate that sample_rate is a positive integer."""
-        if not isinstance(self.sample_rate, int):
-            raise TypeError(
-                f"Sample rate must be an integer, got {type(self.sample_rate).__name__}"
-            )
-        
-        if self.sample_rate <= 0:
-            raise ValueError("Sample rate must be greater than 0")
-
-    def _validate_encoded_format(self):
-        """Validate that encoded_format matches the data type bytes or numpy."""
-        if self.is_numpy and self.encoded_format not in get_args(EncodedNumpyFormat):
-            raise ValueError(
-                f"Invalid encoded format for numpy array: {self.encoded_format}. "
-                f"The only valid format is {get_args(EncodedNumpyFormat)}"
-            )
-        
-        if self.is_bytes and self.encoded_format not in get_args(EncodedBytesFormat):
-            raise ValueError(
-                f"Invalid encoded format for bytes: {self.encoded_format}. "
-                f"Valid formats are: {get_args(EncodedBytesFormat)}"
-            )
-
     def as_bytes(self, output_format: EncodedBytesFormat = "pcm") -> bytes:
         """
         Convert audio data to bytes in specified format.
@@ -148,8 +108,12 @@ class AudioData:
             >>> pcm_bytes = audio.as_bytes("pcm")
             >>> wav_bytes = audio.as_bytes("wav")
         """
-        self._validate_output_format(output_format)
-        return AudioConverter.to_bytes(self, output_format)
+        return AudioConverter.to_bytes(
+            self.data,
+            self.sample_rate,
+            self.encoded_format,
+            output_format
+        )
 
     def as_numpy(self, target_dtype: DType = "float32") -> np.ndarray:
         """
@@ -169,21 +133,8 @@ class AudioData:
             >>> samples_float32 = audio.as_numpy("float32")
             >>> samples_int16 = audio.as_numpy("int16")
         """
-        self._validate_target_dtype(target_dtype)
-        return AudioConverter.to_numpy(self, target_dtype)
-
-    def _validate_output_format(self, output_format: EncodedBytesFormat):
-        """Validate that output_format is one of the supported byte formats."""
-        if output_format not in get_args(EncodedBytesFormat):
-            raise ValueError(
-                f"Invalid output format: {output_format}. "
-                f"Valid formats are: {get_args(EncodedBytesFormat)}"
-            )
-
-    def _validate_target_dtype(self, target_dtype: DType):
-        """Validate that target_dtype is one of the supported types."""
-        if target_dtype not in get_args(DType):
-            raise ValueError(
-                f"Invalid target dtype: {target_dtype}. "
-                f"Valid dtypes are: {get_args(DType)}"
-            )
+        return AudioConverter.to_numpy(
+            self.data,
+            self.encoded_format,
+            target_dtype
+        )

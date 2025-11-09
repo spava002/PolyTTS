@@ -1,8 +1,11 @@
 from typing import Generator, Any
 from abc import ABC, abstractmethod
 
-from .types import AudioData
+from .audio import AudioData
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class TTSProvider(ABC):
     """
