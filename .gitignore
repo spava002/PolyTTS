@@ -5,6 +5,19 @@
 __pycache__/
 *.py[cod]
 
+# Python Build Artifacts
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
 # Virtual Environments
 .env/
 .venv/
@@ -27,3 +40,6 @@ Thumbs.db
 *.opus
 *.flac
 *.aac
+
+# Dependency Files/Folders
+GPT_SoVITS/
