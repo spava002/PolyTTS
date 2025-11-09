@@ -1,4 +1,3 @@
-import torch
 from pathlib import Path
 from typing import Generator, Any
 
@@ -36,6 +35,7 @@ class GPTSovitsTTS(TTSProvider):
                 "  - pip install polytts[gptsovits]  (recommended)\n"
                 "  - Manual setup from: https://github.com/RVC-Boss/GPT-SoVITS"
             )
+        import torch
 
         version_configs = TTS_Config.default_configs[model_version].copy()
 
