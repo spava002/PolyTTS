@@ -34,12 +34,5 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Audio Files
-*.wav
-*.mp3
-*.opus
-*.flac
-*.aac
-
 # Dependency Files/Folders
 GPT_SoVITS/
