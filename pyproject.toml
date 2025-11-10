@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polytts"
-version = "0.1.3"
+version = "0.1.0"
 description = "A unified interface for multiple TTS providers requiring minimal code changes for hotswapping."
 readme = "README.md"
 requires-python = ">=3.9"
