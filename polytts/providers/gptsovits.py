@@ -32,8 +32,8 @@ class GPTSovitsTTS(TTSProvider):
         except ImportError:
             raise ImportError(
                 "GPTSoVITS is not installed. Install with one of:\n"
-                "  - pip install polytts[gptsovits]  (recommended)\n"
-                "  - Manual setup from: https://github.com/RVC-Boss/GPT-SoVITS"
+                "  - Install from URL: pip install git+https://github.com/spava002/GPT-SoVITS-Streaming.git (recommended)\n"
+                "  - Manual setup from source: https://github.com/RVC-Boss/GPT-SoVITS"
             )
         import torch
 
@@ -79,8 +79,11 @@ class GPTSovitsTTS(TTSProvider):
                 speed_factor: Speech speed multiplier. Default: 1.0
                 
                 For complete API reference:
-                    If installed with polytts[gptsovits]: https://github.com/spava002/GPT-SoVITS-Streaming/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L1015
-                    If installed from official: https://github.com/RVC-Boss/GPT-SoVITS/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L984
+                    If installed from URL: 
+                    https://github.com/spava002/GPT-SoVITS-Streaming/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L1015
+                    
+                    If installed from source: 
+                    https://github.com/RVC-Boss/GPT-SoVITS/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L984
 
         Returns:
             AudioData object with generated audio
@@ -135,10 +138,10 @@ class GPTSovitsTTS(TTSProvider):
                 speed_factor: Speech speed multiplier. Default: 1.0
                 
                 For complete API reference:
-                    If installed with polytts[gptsovits]: 
+                    If installed from URL: 
                     https://github.com/spava002/GPT-SoVITS-Streaming/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L1015
                     
-                    If installed from official: 
+                    If installed from source: 
                     https://github.com/RVC-Boss/GPT-SoVITS/blob/main/GPT_SoVITS/TTS_infer_pack/TTS.py#L984
 
         Yields:
